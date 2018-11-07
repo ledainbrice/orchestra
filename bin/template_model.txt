@@ -1,0 +1,54 @@
+package models
+
+import (
+	"log"
+	"orchestra/config"
+	"time"
+	"github.com/satori/go.uuid"
+	uuid_func "orchestra/functions/Uuid"
+)
+
+// La structure de données
+type Item struct {
+	Id   uuid.UUID `gorm:"primary_key;type:char(36);column:id" json:"id"`
+	CreatedAt	time.Time `json:"created_at"`
+	UpdatedAt	time.Time `json:"updated_at"`
+	DeletedAt	*time.Time `json:"deleted_at"`
+	@@@
+}
+
+func (item Item) Validator() (err error) {
+	/*if !validation.ValidateEmail(item.field) {
+		err = errors.New("client email invalide")
+	}*/
+	return
+}
+
+func (item *Item) BeforeCreate() (err error) {
+	if uuid.Equal(item.Id, uuid_func.Format("00000000-0000-0000-0000-000000000000")) {
+		item.Id = uuid.Must(uuid.NewV4())
+	}
+	err = item.Validator()
+	return
+}
+
+// Migration
+func MigrateItem() {
+	db := config.GetDB("default")
+	if !db.HasTable(&Item{}) {
+		db.CreateTable(&Item{})
+		db.Set("gorm:table_options", "ENGINE=InnoDB").CreateTable(&Item{})
+	}
+}
+
+// Seed
+func SeedItem() {
+	db := config.GetDB("default")
+	if db.HasTable(&Item{}) {
+		items := []Item{}
+		for _, item := range items {
+			db.Create(&item)
+			log.Println(item)
+		}
+	}
+}

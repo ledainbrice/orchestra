@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+source bin/create_model
+source bin/create_controller
+source bin/utility
+
+if [ "$#" -lt 2 ]; then
+    echo "Illegal number of parameters"
+    exit 1
+fi
+
+createModel $@
+createController $1 $2
+
+v2up=$(uppercase_first_letter $2)
+echo "You must add in file api.go: models.Migrate$v2up() in InitDb function"
+echo "You must add in file api.go: models.Seed$v2up() in SeedDb function"
+echo "You must add some route in Handlers() into api.go"
+

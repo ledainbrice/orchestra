@@ -1,0 +1,108 @@
+package controllers
+
+import (
+	"orchestra/api/models"
+	"orchestra/config"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Ajouter un item
+func AddItem(c *gin.Context) {
+	db := config.GetDB("default")
+
+	var item models.Item
+	c.Bind(&item)
+	err := db.Create(&item).Error
+	if err != nil {
+		// Create failed, do something e.g. return, panic etc.
+		c.JSON(422, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(201, gin.H{"success": item})
+	}
+
+}
+
+// Obtenir la liste de tous les items
+func IndexItem(c *gin.Context) {
+	db := config.GetDB("default")
+
+	var items []models.Item
+	// SELECT * FROM items
+	db.Find(&items)
+	// Affichage des données
+	c.JSON(200, items)
+}
+
+// Obtenir un item par son id
+func ViewItem(c *gin.Context) {
+	db := config.GetDB("default")
+
+	id := c.Params.ByName("id")
+	var item models.Item
+	uid0 := item.Id
+	// SELECT * FROM items WHERE id = id;
+	db.Where("id = ?", id).First(&item)
+
+	if item.Id != uid0 {
+		// Affichage des données
+		c.JSON(200, item)
+	} else {
+		// Affichage de l'erreur
+		c.JSON(404, gin.H{"error": "Item not found"})
+	}
+}
+
+// Modifier un item
+func EditItem(c *gin.Context) {
+	db := config.GetDB("default")
+
+	// Récupération de l'id dans une variable
+	id := c.Params.ByName("id")
+	var item models.Item
+	// SELECT * FROM items WHERE id = id;
+	db.First(&item, id)
+
+	if true {
+		var item_update models.Item
+		c.Bind(&item_update)
+		item_update.Id = item.Id
+
+		// UPDATE items SET (field1, field2 ...) VALUES ('value 1', 'value 2' ...) WHERE id = item_update.Id;
+		if db.Save(&item_update).Error != nil {
+			// Update failed, do something e.g. return, panic etc.
+			c.JSON(422, gin.H{"error": "Fields are empty"})
+		}
+		// Affichage des données modifiées
+		c.JSON(200, gin.H{"success": item_update})
+	} else {
+		// Affichage de l'erreur
+		c.JSON(404, gin.H{"error": "Item not found"})
+	}
+}
+
+// Supprimer un item
+func DeleteItem(c *gin.Context) {
+	db := config.GetDB("default")
+
+	// Récupération de l'id dans une variable
+	id := c.Params.ByName("id")
+	var item models.Item
+	uid0 := item.Id
+	db.Where("id = ?", id).First(&item)
+
+	if item.Id != uid0 {
+		// DELETE FROM items WHERE id = Item.Id
+		if db.Delete(&item).Error != nil {
+			// Delete failed, do something e.g. return, panic etc.
+			c.JSON(422, gin.H{"error": "Cannot delete Item"})
+		} else {
+			// Affichage des données
+			c.JSON(200, gin.H{"success": "Item #" + id + " deleted"})
+		}
+
+	} else {
+		// Affichage de l'erreur
+		c.JSON(404, gin.H{"error": "Item not found"})
+	}
+}

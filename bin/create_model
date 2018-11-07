@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+source bin/utility
+
+function gormField {
+    IFS=':' read -r -a terms <<< "$1"
+    nullable=";not null"
+    if [[ ${terms[2]} ]]; then
+        nullable=""
+    fi
+    r2=""
+    r1="string"
+    case "${terms[1]}" in
+        "string")
+        r1="string"
+            r2="gorm:"\""type:varchar(255)"\"""
+            ;;
+        "2" | "3")
+            r2=""
+            ;;
+        *)
+        esac
+    foo="$r2$nullable"
+    v=$(uppercase_first_letter ${terms[0]})
+    echo "$v $r1 ù$fooù"
+    echo $'\n'
+}
+
+function createModel {
+    content=`cat bin/template_model.txt`
+    v1up=$(uppercase_first_letter $1)
+    v2up=$(uppercase_first_letter $2)
+    content="${content//Items/$v1up}"
+    content="${content//Item/$v2up}"
+    content="${content//items/$1}"
+    content="${content//item/$2}"
+    for i in "${@:3}"
+    do
+        f=$(gormField $i)
+        content="${content//@@@/$f
+    @@@}"
+    done
+    content="${content//@@@/}"
+    content="${content//ù/\`}"
+    echo "$content" > "api/models/$2.go"
+}
+

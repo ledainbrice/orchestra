@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+source bin/utility
+
+function createController {
+    content=`cat bin/template_controller.txt`
+    v1up=$(uppercase_first_letter $1)
+    v2up=$(uppercase_first_letter $2)
+    content="${content//Items/$v1up}"
+    content="${content//Item/$v2up}"
+    content="${content//items/$1}"
+    content="${content//item/$2}"
+    echo "$content" > "api/controllers/$1.go"
+}
+

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+function uppercase_first_letter {
+    v=$1
+    echo "$(tr '[:lower:]' '[:upper:]' <<< ${v:0:1})${v:1}"
+}
